@@ -1,0 +1,42 @@
+flowchart TD
+    A[Input Sources] --> A1[Upload Folder from Frontend]
+    A --> A2[Server Path Queue]
+    A1 --> B[API Layer: Flask]
+    A2 --> B
+
+    B --> B1[/api/upload-scan-stream]
+    B --> B2[/api/upload-scan]
+    B --> B3[/api/scan-async -> ScanJob Worker]
+    B1 --> C
+    B2 --> C
+    B3 --> C
+
+    C[Scan Orchestrator\nstream_project_scan()] --> D1[Stage 1: Initialization\nresolve context, setup logger/progress]
+    D1 --> D2[Stage 2: File Scanning\nscan_directory + folder tree + language inventory]
+    D2 --> D3[Stage 3: AST Parsing (Python)\nattach_python_ast]
+    D3 --> D4[Stage 4: Static Analysis\nPython AST rules + Binary scan + Semgrep + optional CodeQL\n+ dedupe findings]
+    D4 --> D5[Stage 5: Process and Taint Analysis\nPython + JS/TS process flow\nbuild process graph]
+    D5 --> D6[Stage 6: Malicious Correlation\nreverse-shell/obfuscation/external endpoint heuristics]
+    D6 --> D7[Stage 7: Tamperability Analysis\ndebug/admin/config/writable/env checks]
+    D7 --> D8[Stage 8: Risk Scoring\nR = 0.30S + 0.30P + 0.25M + 0.15T]
+    D8 --> D9[Stage 9: Report Assembly\nApplicationModel ready]
+
+    E[Module Gates\nstatic/process/taint/malicious/tamper/graph/ai] -. controls .-> C
+    F[Options\nincremental semgrep, codeql_enabled, load_content] -. controls .-> C
+
+    D9 --> G[Output Channel 1\nLive SSE Logs + Progress + Result JSON]
+    D9 --> H[Output Channel 2\nPersistence to SQLite]
+
+    H --> H1[scans + languages + files]
+    H --> H2[vulnerabilities]
+    H --> H3[process_events + graph_edges]
+    H --> H4[malicious_indicators]
+    H --> H5[tamper_issues]
+    H --> H6[telemetry + semgrep_manifest_cache]
+
+    D9 --> I[Frontend Pages]
+    I --> I1[Vulnerabilities]
+    I --> I2[Process Graph]
+    I --> I3[Malicious Analysis]
+    I --> I4[Tamperability]
+    I --> I5[Reports / Dashboard]

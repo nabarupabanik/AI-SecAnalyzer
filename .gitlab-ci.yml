@@ -1,0 +1,14 @@
+stages:
+  - sast
+
+sast_semgrep:
+  stage: sast
+  image: returntocorp/semgrep:latest
+  script:
+    - semgrep scan --config auto --sarif --output gl-sast-report.sarif .
+  artifacts:
+    when: always
+    paths:
+      - gl-sast-report.sarif
+    reports:
+      sast: gl-sast-report.sarif

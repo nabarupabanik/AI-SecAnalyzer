@@ -1,0 +1,24 @@
+# sample_project/config.yaml
+# Application configuration
+
+server:
+  host: "0.0.0.0"
+  port: 5000
+  debug: true          # Should be false in production (Sprint 2 target)
+
+database:
+  driver: "postgresql"
+  host: "localhost"
+  port: 5432
+  name: "myapp"
+  user: "admin"
+  password: "secret_password_123"   # Hardcoded secret (Sprint 2 target)
+
+security:
+  secret_key: "flask-super-secret-key"
+  session_timeout: 3600
+  cors_allowed_origins: "*"         # Overly permissive (Sprint 2 target)
+
+logging:
+  level: "DEBUG"   # Exposes too much info in production (Sprint 2 target)
+  file: "/var/log/app.log"

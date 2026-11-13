@@ -1,0 +1,35 @@
+name: Quality Gate
+
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  scanner-regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-api.txt
+      - name: Compile check
+        run: |
+          python -c "import glob, py_compile; [py_compile.compile(p, doraise=True) for p in ['api_server.py', *glob.glob('scanner/*.py')]]"
+      - name: Static dispatcher tests
+        run: |
+          pytest -q tests/test_static_dispatcher.py tests/test_phase3_policy_sarif.py
+      - name: Generate SARIF (Semgrep)
+        run: |
+          semgrep scan --config auto --sarif --output semgrep.sarif . || true
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
